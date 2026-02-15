@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#1B4332">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="FortPass">
+<link rel="manifest" href="./manifest.json">
+<title>FortPass - السوار الذكي لقلعة نزوى</title>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--pri:#1B4332;--pri-l:#2D6A4F;--pri-d:#081C15;--acc:#D4A373;--acc-l:#E9C46A;--bg:#FAF3E0;--txt:#1A1A2E;--txt-l:#6B7280;--red:#DC2626;--grn:#16A34A;--wrn:#F59E0B;--info:#0EA5E9;--safe-t:env(safe-area-inset-top,0px);--safe-b:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;width:100%;font-family:'Tajawal',sans-serif;background:#0A1A12;overflow:hidden;touch-action:manipulation;-webkit-font-smoothing:antialiased}
+#app{max-width:430px;height:100%;margin:0 auto;background:#fff;display:flex;flex-direction:column;overflow:hidden;position:relative}
+.pg{display:none;flex-direction:column;height:100%;overflow:hidden}.pg.on{display:flex}
+.pg-c{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
+::-webkit-scrollbar{width:3px}::-webkit-scrollbar-thumb{background:#D1D5DB;border-radius:4px}
+.hdr{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;padding-top:calc(12px + var(--safe-t));background:#fff;border-bottom:1px solid #F3F4F6;z-index:10;flex-shrink:0}
+.hdr h2{font-size:18px;font-weight:700;color:var(--txt)}
+.hdr-b{width:40px;height:40px;border-radius:12px;background:#F9FAFB;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--txt);font-size:20px}
+.cd{background:#fff;border-radius:16px;padding:16px;box-shadow:0 1px 8px rgba(0,0,0,.06)}
+.btn{border:none;border-radius:14px;padding:14px 24px;font-family:'Tajawal',sans-serif;font-weight:700;font-size:15px;cursor:pointer;width:100%;transition:.2s}
+.btn-p{background:linear-gradient(135deg,var(--pri),var(--pri-l));color:#fff}.btn-p:active{opacity:.85;transform:scale(.98)}
+.btn-s{background:#F3F4F6;color:var(--txt);font-weight:600}
+.btn-d{background:linear-gradient(135deg,var(--red),#EF4444);color:#fff}
+.btn:disabled{opacity:.5;cursor:default}
+.tab-bar{display:flex;background:#fff;border-top:1px solid #F3F4F6;padding:8px 0;padding-bottom:calc(12px + var(--safe-b));flex-shrink:0}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;cursor:pointer;color:#9CA3AF;padding:4px 0;font-family:'Tajawal',sans-serif;transition:.2s}
+.tab.on{color:var(--pri)}.tab span{font-size:10px;font-weight:500}.tab.on span{font-weight:700}
+.tab-d{width:20px;height:3px;border-radius:3px;background:var(--acc);margin-top:2px;display:none}.tab.on .tab-d{display:block}
+.tab-i{font-size:22px;transition:.2s}.tab.on .tab-i{transform:scale(1.1)}
+.isl{position:absolute;top:0;left:0;width:100%;height:100%;opacity:.06;pointer-events:none;background-image:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0L60 30L30 60L0 30Z' fill='none' stroke='%23D4A373' stroke-width='.5'/%3E%3Ccircle cx='30' cy='30' r='10' fill='none' stroke='%23D4A373' stroke-width='.3'/%3E%3C/svg%3E");background-size:60px 60px}
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes scaleIn{from{transform:scale(0)}to{transform:scale(1)}}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+@keyframes ripple{0%{transform:scale(.8);opacity:1}100%{transform:scale(2);opacity:0}}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+@keyframes slideDown{from{transform:translateY(-30px);opacity:0}to{transform:translateY(0);opacity:1}}
+@keyframes alertPulse{0%,100%{box-shadow:0 0 0 0 rgba(220,38,38,.4)}50%{box-shadow:0 0 0 20px rgba(220,38,38,0)}}
+@keyframes userPulse{0%,100%{box-shadow:0 0 0 6px rgba(14,165,233,.2)}50%{box-shadow:0 0 0 14px rgba(14,165,233,.08)}}
+@keyframes progBar{from{width:0}to{width:100%}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.fi{animation:fadeIn .35s ease-out}.si{animation:scaleIn .4s ease-out}
+input,textarea,select{width:100%;padding:12px 16px;border-radius:12px;border:1.5px solid #E5E7EB;font-size:15px;outline:none;background:#FAFAFA;font-family:'Tajawal',sans-serif;direction:rtl;transition:.2s}
+input:focus,textarea:focus{border-color:var(--acc)}
+.fx{display:flex}.fc{flex-direction:column}.ac{align-items:center}.jc{justify-content:center}.jb{justify-content:space-between}
+.g8{gap:8px}.g12{gap:12px}.g16{gap:16px}.tc{text-align:center}.w1{width:100%}.p20{padding:20px}
+.mb8{margin-bottom:8px}.mb12{margin-bottom:12px}.mb16{margin-bottom:16px}.mb20{margin-bottom:20px}.mb24{margin-bottom:24px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+/* Toast */
+.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:var(--pri);color:#fff;padding:12px 24px;border-radius:14px;font-size:14px;font-weight:600;z-index:999;box-shadow:0 8px 30px rgba(0,0,0,.3);animation:slideDown .3s ease;max-width:90%;text-align:center;font-family:'Tajawal',sans-serif}
+.toast.err{background:var(--red)}.toast.ok{background:var(--grn)}.toast.wrn{background:var(--wrn)}
+/* Notification Bell Badge */
+.notif-badge{position:absolute;top:-4px;right:-4px;width:18px;height:18px;border-radius:50%;background:var(--red);color:#fff;font-size:10px;display:flex;align-items:center;justify-content:center;font-weight:700;border:2px solid #fff}
+/* BT Device Item */
+.bt-dev{transition:.2s;cursor:pointer}.bt-dev:active{transform:scale(.98)}
+/* Password eye */
+.pwd-wrap{position:relative}.pwd-eye{position:absolute;left:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:18px;color:var(--txt-l)}
+/* Spinner */
+.spin{width:24px;height:24px;border:3px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;display:inline-block}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- ===== SPLASH ===== -->
+<div id="splash" class="pg on" style="background:linear-gradient(160deg,#081C15,#1B4332 50%,#2D6A4F);align-items:center;justify-content:center;">
+<div class="isl"></div>
+<div style="width:120px;height:120px;border-radius:50%;background:linear-gradient(135deg,#D4A373,#E9C46A);display:flex;align-items:center;justify-content:center;box-shadow:0 20px 60px rgba(0,0,0,.4);animation:pulse 2s ease-in-out infinite;z-index:1"><span style="font-size:48px">🏰</span></div>
+<h1 style="font-family:'Amiri',serif;font-size:42px;color:#E9C46A;margin-top:28px;letter-spacing:2px;text-shadow:0 4px 20px rgba(0,0,0,.3);z-index:1">FortPass</h1>
+<p style="font-size:16px;color:rgba(255,255,255,.7);margin-top:8px;z-index:1">السوار الذكي لقلعة نزوى</p>
+<div style="width:200px;height:3px;background:rgba(255,255,255,.15);border-radius:4px;overflow:hidden;margin-top:40px;z-index:1"><div style="height:100%;background:linear-gradient(90deg,#D4A373,#E9C46A);border-radius:4px;animation:progBar 2s ease-out forwards"></div></div>
+</div>
+
+<!-- ===== AUTH: LOGIN ===== -->
+<div id="auth-login" class="pg">
+<div class="pg-c fx fc ac jc p20" style="background:linear-gradient(180deg,#081C15 0%,#1B4332 40%,#fff 40%);">
+<div style="width:100%;max-width:380px;margin-top:-20px;">
+<!-- Logo Area -->
+<div class="tc mb24" style="padding-top:40px;">
+<div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#D4A373,#E9C46A);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;box-shadow:0 10px 40px rgba(0,0,0,.3)"><span style="font-size:36px">🏰</span></div>
+<h1 style="font-family:'Amiri',serif;font-size:32px;color:#E9C46A;letter-spacing:1px">FortPass</h1>
+<p style="color:rgba(255,255,255,.6);font-size:13px;margin-top:4px">تسجيل الدخول إلى حسابك</p>
+</div>
+
+<!-- Login Form -->
+<div class="cd fi" style="padding:24px;margin-top:20px;">
+<div class="mb16">
+<label style="font-size:13px;color:var(--txt-l);display:block;margin-bottom:6px">البريد الإلكتروني</label>
+<input type="email" id="login-email" placeholder="example@email.com" dir="ltr" style="text-align:left">
+</div>
+<div class="mb16">
+<label style="font-size:13px;color:var(--txt-l);display:block;margin-bottom:6px">كلمة المرور</label>
+<div class="pwd-wrap">
+<input type="password" id="login-pass" placeholder="••••••••" dir="ltr" style="text-align:left">
+<button class="pwd-eye" onclick="togglePwd('login-pass',this)">👁</button>
+</div>
+</div>
+<div class="fx jb ac mb20">
+<label class="fx ac g8" style="font-size:13px;color:var(--txt-l);cursor:pointer"><input type="checkbox" id="remember-me" style="width:auto;padding:0"> تذكرني</label>
+<a href="#" style="font-size:13px;color:var(--acc);text-decoration:none" onclick="showToast('تم إرسال رابط إعادة التعيين','ok');return false">نسيت كلمة المرور؟</a>
+</div>
+<button class="btn btn-p mb12" onclick="doLogin()">تسجيل الدخول</button>
+<div class="tc" style="font-size:13px;color:var(--txt-l)">
+ليس لديك حساب؟ <a href="#" style="color:var(--acc);font-weight:700;text-decoration:none" onclick="nav('auth-register');return false">تسجيل جديد</a>
+</div>
+</div>
+
+<!-- Social Login -->
+<div class="tc" style="margin-top:20px;">
+<p style="font-size:13px;color:var(--txt-l);margin-bottom:12px">أو سجّل الدخول عبر</p>
+<div class="fx jc g12">
+<button onclick="socialLogin('Google')" style="width:50px;height:50px;border-radius:14px;background:#fff;border:1.5px solid #E5E7EB;cursor:pointer;font-size:24px;box-shadow:0 2px 8px rgba(0,0,0,.06)">G</button>
+<button onclick="socialLogin('Apple')" style="width:50px;height:50px;border-radius:14px;background:#000;border:none;cursor:pointer;font-size:24px;color:#fff;box-shadow:0 2px 8px rgba(0,0,0,.15)">🍎</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- ===== AUTH: REGISTER ===== -->
+<div id="auth-register" class="pg">
+<div class="pg-c" style="background:#fff;">
+<div style="background:linear-gradient(135deg,#081C15,#1B4332);padding:24px 20px 40px;border-radius:0 0 28px 28px;position:relative;overflow:hidden">
+<div class="isl"></div>
+<div style="position:relative;z-index:1">
+<button class="hdr-b" onclick="nav('auth-login')" style="background:rgba(255,255,255,.15);color:#fff;margin-bottom:16px">→</button>
+<h2 style="color:#E9C46A;font-family:'Amiri',serif;font-size:28px">تسجيل جديد</h2>
+<p style="color:rgba(255,255,255,.6);font-size:13px;margin-top:4px">أنشئ حسابك في FortPass</p>
+</div>
+</div>
+
+<div class="p20 fi" style="margin-top:-16px;">
+<div class="cd" style="padding:24px;">
+<div class="mb16">
+<label style="font-size:13px;color:var(--txt-l);display:block;margin-bottom:6px">الاسم الكامل</label>
+<input type="text" id="reg-name" placeholder="أدخل اسمك الكامل">
+</div>
+<div class="mb16">
+<label style="font-size:13px;color:var(--txt-l);display:block;margin-bottom:6px">البريد الإلكتروني</label>
+<input type="email" id="reg-email" placeholder="example@email.com" dir="ltr" style="text-align:left">
+</div>
+<div class="mb16">
+<label style="font-size:13px;color:var(--txt-l);display:block;margin-bottom:6px">رقم الهاتف</label>
+<input type="tel" id="reg-phone" placeholder="+968 XXXX XXXX" dir="ltr" style="text-align:left">
+</div>
+<div class="mb16">
+<label style="font-size:13px;color:var(--txt-l);display:block;margin-bottom:6px">كلمة المرور</label>
+<div class="pwd-wrap">
+<input type="password" id="reg-pass" placeholder="8 أحرف على الأقل" dir="ltr" style="text-align:left" oninput="checkPassStrength(this.value)">
+<button class="pwd-eye" onclick="togglePwd('reg-pass',this)">👁</button>
+</div>
+<div id="pass-strength" class="fx g8 ac" style="margin-top:8px;height:20px;"></div>
+</div>
+<div class="mb16">
+<label style="font-size:13px;color:var(--txt-l);display:block;margin-bottom:6px">تأكيد كلمة المرور</label>
+<div class="pwd-wrap">
+<input type="password" id="reg-pass2" placeholder="أعد إدخال كلمة المرور" dir="ltr" style="text-align:left">
+<button class="pwd-eye" onclick="togglePwd('reg-pass2',this)">👁</button>
+</div>
+</div>
+<div class="mb16">
+<label style="font-size:13px;color:var(--txt-l);display:block;margin-bottom:6px">الجنسية</label>
+<select id="reg-nationality">
+<option value="">اختر الجنسية</option>
+<option value="OM" selected>عماني</option>
+<option value="AE">إماراتي</option>
+<option value="SA">سعودي</option>
+<option value="OTHER">أخرى</option>
+</select>
+</div>
+<div class="mb20">
+<label class="fx ac g8" style="font-size:13px;color:var(--txt-l);cursor:pointer;line-height:1.6">
+<input type="checkbox" id="reg-terms" style="width:auto;padding:0;flex-shrink:0">
+أوافق على <a href="#" style="color:var(--acc);text-decoration:none">الشروط والأحكام</a> و<a href="#" style="color:var(--acc);text-decoration:none">سياسة الخصوصية</a>
+</label>
+</div>
+<button class="btn btn-p" onclick="doRegister()">إنشاء الحساب</button>
+</div>
+</div>
+</div>
+</div>
+
+<!-- ===== HOME ===== -->
+<div id="home" class="pg">
+<div style="background:linear-gradient(135deg,#081C15,#1B4332);padding:20px 20px 40px;border-radius:0 0 28px 28px;position:relative;overflow:hidden;flex-shrink:0">
+<div class="isl"></div>
+<div style="position:relative;z-index:1">
+<div class="fx jb ac mb20">
+<div>
+<p style="color:rgba(255,255,255,.6);font-size:13px">مرحباً، <span id="user-name-display">الزائر</span></p>
+<h1 style="color:#E9C46A;font-family:'Amiri',serif;font-size:28px;letter-spacing:1px;margin-top:4px">FortPass</h1>
+</div>
+<div class="fx g12">
+<!-- Notification Bell -->
+<button class="hdr-b" onclick="nav('notifications')" style="background:rgba(255,255,255,.15);color:#fff;border-radius:50%;position:relative">
+🔔<span id="notif-badge" class="notif-badge" style="display:none">0</span>
+</button>
+<button class="hdr-b" onclick="nav('profile')" style="background:rgba(255,255,255,.15);color:#fff;border-radius:50%">👤</button>
+</div>
+</div>
+<div class="fx g12">
+<div style="flex:1;background:rgba(255,255,255,.1);border-radius:16px;padding:14px 16px">
+<div class="fx ac g8 mb8"><div id="hm-band-dot" style="width:8px;height:8px;border-radius:50%;background:#EF4444"></div><span style="color:rgba(255,255,255,.7);font-size:11px">السوار</span></div>
+<span id="hm-band-st" style="color:#fff;font-size:14px;font-weight:600">غير متصل</span>
+</div>
+<div style="flex:1;background:rgba(255,255,255,.1);border-radius:16px;padding:14px 16px">
+<div class="fx ac g8 mb8"><span style="color:rgba(255,255,255,.7);font-size:11px">التذكرة</span></div>
+<span id="hm-ticket" style="color:#fff;font-size:14px;font-weight:600">لم تحجز بعد</span>
+</div>
+</div>
+</div>
+</div>
+
+<div class="pg-c" style="padding:20px;margin-top:-16px">
+<div class="g3 mb24 fi">
+<button onclick="nav('map')" class="cd" style="text-align:center;padding:20px 8px;border:none;cursor:pointer"><div style="font-size:28px;margin-bottom:8px">🗺️</div><div style="font-size:13px;font-weight:600">الخريطة</div></button>
+<button onclick="nav('booking')" class="cd" style="text-align:center;padding:20px 8px;border:none;cursor:pointer"><div style="font-size:28px;margin-bottom:8px">🎫</div><div style="font-size:13px;font-weight:600">الحجز</div></button>
+<button onclick="nav('wristband')" class="cd" style="text-align:center;padding:20px 8px;border:none;cursor:pointer"><div style="font-size:28px;margin-bottom:8px">⌚</div><div style="font-size:13px;font-weight:600">السوار</div></button>
+<button onclick="nav('wallet')" class="cd" style="text-align:center;padding:20px 8px;border:none;cursor:pointer"><div style="font-size:28px;margin-bottom:8px">💳</div><div style="font-size:13px;font-weight:600">المحفظة</div></button>
+<button onclick="nav('exhibit')" class="cd" style="text-align:center;padding:20px 8px;border:none;cursor:pointer"><div style="font-size:28px;margin-bottom:8px">🏛️</div><div style="font-size:13px;font-weight:600">المعروضات</div></button>
+<button onclick="nav('review')" class="cd" style="text-align:center;padding:20px 8px;border:none;cursor:pointer"><div style="font-size:28px;margin-bottom:8px">⭐</div><div style="font-size:13px;font-weight:600">التقييم</div></button>
+</div>
+
+<button onclick="nav('emergency')" class="fx ac g16 mb20" style="width:100%;padding:16px 20px;background:linear-gradient(135deg,#DC2626,#EF4444);border-radius:16px;border:none;cursor:pointer;box-shadow:0 4px 20px rgba(220,38,38,.25)">
+<span style="font-size:28px">🚨</span>
+<div style="text-align:right;flex:1"><div style="color:#fff;font-size:16px;font-weight:700">زر الطوارئ</div><div style="color:rgba(255,255,255,.7);font-size:12px">إرسال تنبيه فوري لفريق الأمان</div></div>
+</button>
+
+<div class="cd" style="background:linear-gradient(135deg,rgba(212,163,115,.05),rgba(233,196,106,.05));border:1px solid rgba(212,163,115,.15)">
+<div class="fx g16" style="align-items:flex-start"><span style="font-size:36px;flex-shrink:0">🏰</span>
+<div><h3 style="font-size:16px;font-weight:700;margin-bottom:4px">قلعة نزوى</h3>
+<p style="font-size:13px;color:var(--txt-l);line-height:1.8;margin-bottom:10px">أكبر قلعة في شبه الجزيرة العربية. بنيت في القرن 17 بأمر من الإمام سلطان بن سيف اليعربي.</p>
+<div class="fx g16" style="font-size:12px;color:var(--acc);font-weight:600"><span>🕐 8:00 - 16:00</span><span>👥 +100,000 زائر سنوياً</span></div>
+</div></div>
+</div>
+</div>
+</div>
+
+<!-- ===== NOTIFICATIONS ===== -->
+<div id="notifications" class="pg">
+<div class="hdr"><button class="hdr-b" onclick="nav('home')">→</button><h2>التنبيهات</h2><button class="hdr-b" onclick="clearNotifications()" style="font-size:14px;color:var(--acc)">مسح</button></div>
+<div class="pg-c p20">
+<div id="notif-list"></div>
+<div id="notif-empty" class="fx fc ac jc tc" style="padding:60px 20px;display:none">
+<span style="font-size:48px;margin-bottom:16px">🔔</span>
+<h3 style="font-weight:700;font-size:18px;margin-bottom:8px">لا توجد تنبيهات</h3>
+<p style="color:var(--txt-l);font-size:14px">ستصلك التنبيهات هنا عند ربط السوار</p>
+</div>
+</div>
+</div>
+
+<!-- ===== WRISTBAND (REAL BLUETOOTH) ===== -->
+<div id="wristband" class="pg">
+<div class="hdr"><button class="hdr-b" onclick="nav('home')">→</button><h2>ربط السوار</h2><div style="width:40px"></div></div>
+<div class="pg-c fx fc ac p20">
+
+<!-- BT Not Supported Warning -->
+<div id="bt-warn" style="display:none;width:100%;" class="mb20">
+<div class="cd" style="background:#FEF3C7;border:1px solid #FDE68A">
+<div class="fx ac g12"><span style="font-size:22px">⚠️</span>
+<div><div style="font-size:14px;font-weight:600;color:#92400E">البلوتوث غير مدعوم</div>
+<div style="font-size:12px;color:#A16207">يتطلب متصفح Chrome على أندرويد أو جهاز يدعم Web Bluetooth</div></div>
+</div></div>
+</div>
+
+<!-- Disconnected State -->
+<div id="bt-off" class="tc w1">
+<div style="width:160px;height:160px;border-radius:50%;background:rgba(212,163,115,.08);display:flex;align-items:center;justify-content:center;position:relative;margin:40px auto 0">
+<div id="bt-ripple1" style="display:none;position:absolute;width:100%;height:100%;border-radius:50%;border:2px solid rgba(27,67,50,.2);animation:ripple 1.5s ease-out infinite"></div>
+<div id="bt-ripple2" style="display:none;position:absolute;width:100%;height:100%;border-radius:50%;border:2px solid rgba(27,67,50,.2);animation:ripple 1.5s ease-out infinite .5s"></div>
+<div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#D4A373,#E9C46A);display:flex;align-items:center;justify-content:center;box-shadow:0 8px 30px rgba(212,163,115,.3)"><span style="font-size:36px">⌚</span></div>
+</div>
+<h3 id="bt-title" style="font-weight:700;font-size:20px;margin-top:24px">ربط السوار الذكي</h3>
+<p id="bt-desc" style="color:var(--txt-l);max-width:300px;line-height:1.8;margin:8px auto 0">اضغط للبحث عن أجهزة البلوتوث القريبة وربط السوار الذكي</p>
+
+<!-- Found Devices List -->
+<div id="bt-devices" style="display:none;width:100%;margin-top:20px;text-align:right">
+<h4 style="font-size:14px;color:var(--txt-l);margin-bottom:12px">الأجهزة المكتشفة:</h4>
+<div id="bt-device-list"></div>
+</div>
+
+<button id="bt-scan-btn" class="btn btn-p" onclick="startRealBluetooth()" style="margin-top:24px;width:220px">🔍 البحث عن الأجهزة</button>
+</div>
+
+<!-- Connected State -->
+<div id="bt-on" style="display:none;width:100%" class="tc">
+<div class="si" style="width:120px;height:120px;border-radius:50%;background:linear-gradient(135deg,#16A34A,#22C55E);display:flex;align-items:center;justify-content:center;box-shadow:0 10px 40px rgba(22,163,74,.25);margin:40px auto 0"><span style="font-size:48px;color:#fff">✓</span></div>
+<h3 style="font-weight:700;font-size:20px;margin-top:24px">السوار متصل</h3>
+<p id="bt-connected-name" style="color:var(--txt-l);margin-top:8px">تم ربط السوار بنجاح</p>
+
+<div class="cd w1" style="margin-top:24px;text-align:right">
+<div class="fx jb mb16"><span style="font-size:14px;font-weight:600">حالة السوار</span><span style="font-size:12px;color:var(--grn);font-weight:600">● متصل</span></div>
+<div class="fx ac g12" style="padding:10px 0"><span style="font-size:18px">🔋</span><span style="flex:1;font-size:14px">البطارية</span><span id="bt-batt" style="font-size:14px;color:var(--pri-l);font-weight:600">--</span></div>
+<div class="fx ac g12" style="padding:10px 0;border-top:1px solid #F3F4F6"><span style="font-size:18px">📶</span><span style="flex:1;font-size:14px">البلوتوث</span><span style="font-size:14px;color:var(--pri-l);font-weight:600">متصل</span></div>
+<div class="fx ac g12" style="padding:10px 0;border-top:1px solid #F3F4F6"><span style="font-size:18px">📡</span><span style="flex:1;font-size:14px">NFC</span><span style="font-size:14px;color:var(--pri-l);font-weight:600">نشط</span></div>
+<div class="fx ac g12" style="padding:10px 0;border-top:1px solid #F3F4F6"><span style="font-size:18px">📍</span><span style="flex:1;font-size:14px">GPS</span><span style="font-size:14px;color:var(--pri-l);font-weight:600">دقيق</span></div>
+<div class="fx ac g12" style="padding:10px 0;border-top:1px solid #F3F4F6"><span style="font-size:18px">📏</span><span style="flex:1;font-size:14px">RSSI</span><span id="bt-rssi" style="font-size:14px;color:var(--pri-l);font-weight:600">--</span></div>
+</div>
+<button class="btn btn-s" onclick="disconnectBT()" style="margin-top:16px;width:220px">قطع الاتصال</button>
+</div>
+</div>
+</div>
+
+<!-- ===== BOOKING ===== -->
+<div id="booking" class="pg">
+<div class="hdr"><button class="hdr-b" onclick="nav('home')">→</button><h2>حجز زيارة</h2><div style="width:40px"></div></div>
+<div class="fx g8" style="padding:16px 20px"><div id="bp1" style="flex:1;height:4px;border-radius:4px;background:var(--acc);transition:.3s"></div><div id="bp2" style="flex:1;height:4px;border-radius:4px;background:#E5E7EB;transition:.3s"></div><div id="bp3" style="flex:1;height:4px;border-radius:4px;background:#E5E7EB;transition:.3s"></div></div>
+<div class="pg-c" style="padding:0 20px">
+<!-- Step 1 -->
+<div id="bs1" class="fi">
+<h3 style="font-weight:700;font-size:17px;margin-bottom:12px">اختر نوع الجولة</h3>
+<div class="fx fc g12">
+<button onclick="sTour('تاريخية',this)" class="cd tbtn st fx ac g16" style="border:2px solid var(--acc);background:rgba(212,163,115,.06);cursor:pointer;text-align:right"><span style="font-size:36px">🏰</span><div><div style="font-weight:600">تاريخية</div><div style="font-size:13px;color:var(--txt-l)">استكشف تاريخ القلعة العريق</div></div></button>
+<button onclick="sTour('عائلية',this)" class="cd tbtn fx ac g16" style="border:2px solid transparent;cursor:pointer;text-align:right"><span style="font-size:36px">👨‍👩‍👧‍👦</span><div><div style="font-weight:600">عائلية</div><div style="font-size:13px;color:var(--txt-l)">مسار مناسب للعائلات والأطفال</div></div></button>
+<button onclick="sTour('معمارية',this)" class="cd tbtn fx ac g16" style="border:2px solid transparent;cursor:pointer;text-align:right"><span style="font-size:36px">🕌</span><div><div style="font-weight:600">معمارية</div><div style="font-size:13px;color:var(--txt-l)">تعرف على الهندسة المعمارية</div></div></button>
+</div></div>
+<!-- Step 2 -->
+<div id="bs2" style="display:none" class="fi">
+<h3 style="font-weight:700;font-size:17px;margin-bottom:12px">اختر التاريخ والوقت</h3>
+<div class="cd mb16"><label style="font-size:14px;color:var(--txt-l);display:block;margin-bottom:8px">التاريخ</label><input type="date" id="vdate" value="2026-02-20"></div>
+<h4 style="font-size:14px;color:var(--txt-l);margin-bottom:8px">الأوقات المتاحة</h4>
+<div class="g2">
+<button onclick="sTime('08:00',this)" class="cd tmb" style="text-align:center;border:2px solid transparent;cursor:pointer;padding:12px"><div style="font-weight:600;font-size:18px">08:00</div><span style="font-size:11px;color:#16A34A;font-weight:600;background:rgba(22,163,74,.08);border-radius:8px;padding:2px 8px;display:inline-block;margin-top:4px">منخفض</span></button>
+<button onclick="sTime('10:00',this)" class="cd tmb stm" style="text-align:center;border:2px solid var(--acc);cursor:pointer;padding:12px"><div style="font-weight:600;font-size:18px">10:00</div><span style="font-size:11px;color:#F59E0B;font-weight:600;background:rgba(245,158,11,.08);border-radius:8px;padding:2px 8px;display:inline-block;margin-top:4px">متوسط</span></button>
+<button onclick="sTime('14:00',this)" class="cd tmb" style="text-align:center;border:2px solid transparent;cursor:pointer;padding:12px"><div style="font-weight:600;font-size:18px">14:00</div><span style="font-size:11px;color:#F59E0B;font-weight:600;background:rgba(245,158,11,.08);border-radius:8px;padding:2px 8px;display:inline-block;margin-top:4px">متوسط</span></button>
+<button onclick="sTime('16:00',this)" class="cd tmb" style="text-align:center;border:2px solid transparent;cursor:pointer;padding:12px"><div style="font-weight:600;font-size:18px">16:00</div><span style="font-size:11px;color:#16A34A;font-weight:600;background:rgba(22,163,74,.08);border-radius:8px;padding:2px 8px;display:inline-block;margin-top:4px">منخفض</span></button>
+</div></div>
+<!-- Step 3 -->
+<div id="bs3" style="display:none" class="fi">
+<h3 style="font-weight:700;font-size:17px;margin-bottom:12px">تأكيد الحجز</h3>
+<div class="cd" style="background:linear-gradient(135deg,var(--pri),var(--pri-l));color:#fff;padding:24px">
+<div class="fx jb mb16"><span style="opacity:.8;font-size:13px">تذكرة رقمية</span><span style="font-family:'Amiri',serif;font-size:14px;letter-spacing:1px">FortPass</span></div>
+<div class="tc mb16"><div style="font-size:13px;opacity:.7">قلعة نزوى</div><div style="font-size:32px;margin:4px 0">🏰</div></div>
+<div class="g2" style="border-top:1px solid rgba(255,255,255,.2);padding-top:16px">
+<div><div style="font-size:11px;opacity:.6">التاريخ</div><div id="cd2" style="font-size:15px;font-weight:600">-</div></div>
+<div><div style="font-size:11px;opacity:.6">الوقت</div><div id="ct2" style="font-size:15px;font-weight:600">-</div></div>
+<div><div style="font-size:11px;opacity:.6">الجولة</div><div id="ctr2" style="font-size:15px;font-weight:600">-</div></div>
+<div><div style="font-size:11px;opacity:.6">الزوار</div><div style="font-size:15px;font-weight:600">1</div></div>
+</div>
+<div class="tc" style="margin-top:16px;border-top:1px dashed rgba(255,255,255,.3);padding-top:16px"><div style="font-size:13px;opacity:.7">المبلغ الإجمالي</div><div style="font-size:28px;font-weight:700">3.000 ر.ع</div></div>
+</div></div>
+<!-- Success -->
+<div id="bsuc" style="display:none;flex:1" class="fx fc ac jc tc p20">
+<div class="si" style="width:100px;height:100px;border-radius:50%;background:linear-gradient(135deg,#16A34A,#22C55E);display:flex;align-items:center;justify-content:center;box-shadow:0 10px 40px rgba(22,163,74,.3)"><span style="font-size:48px;color:#fff">✓</span></div>
+<h2 style="font-weight:700;font-size:22px;margin-top:24px">تم الحجز بنجاح!</h2>
+<p style="color:var(--txt-l);margin-top:8px">تذكرتك الرقمية جاهزة</p>
+</div>
+</div>
+<div id="bnav" style="padding:16px 20px;border-top:1px solid #F3F4F6;flex-shrink:0"><div class="fx g12"><button id="bprev" class="btn btn-s" onclick="bPrev()" style="flex:1;display:none">السابق</button><button id="bnxt" class="btn btn-p" onclick="bNext()" style="flex:2">التالي</button></div></div>
+</div>
+
+<!-- ===== MAP ===== -->
+<div id="map" class="pg">
+<div class="hdr"><button class="hdr-b" onclick="nav('home')">→</button><h2>خريطة القلعة</h2><button class="hdr-b" onclick="togAG()" style="color:var(--acc)">🎧</button></div>
+<div id="ag-bar" style="display:none;background:linear-gradient(135deg,var(--pri),var(--pri-l));padding:12px 20px;animation:slideDown .3s ease" class="fx ac g12">
+<span style="color:var(--acc-l)">🎧</span><div style="flex:1"><div style="color:#fff;font-size:13px;font-weight:600">الدليل الصوتي</div><div style="color:rgba(255,255,255,.6);font-size:11px">قصة القلعة - 3:24</div></div>
+<div style="width:36px;height:36px;border-radius:50%;background:var(--acc-l);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px">▶</div>
+</div>
+<div style="flex:1;position:relative;margin:16px;background:linear-gradient(135deg,#F5E6D3,#EDD9C0);border-radius:20px;overflow:hidden;box-shadow:inset 0 2px 10px rgba(0,0,0,.1)">
+<div class="isl" style="opacity:.04"></div>
+<svg style="position:absolute;width:100%;height:100%;opacity:.15" viewBox="0 0 100 100"><circle cx="50" cy="35" r="20" fill="none" stroke="#1B4332" stroke-width=".5" stroke-dasharray="2 1"/><rect x="25" y="50" width="50" height="30" rx="2" fill="none" stroke="#1B4332" stroke-width=".5" stroke-dasharray="2 1"/></svg>
+<svg style="position:absolute;width:100%;height:100%;pointer-events:none;z-index:1" viewBox="0 0 100 100"><path d="M40 55 Q35 60 30 70" fill="none" stroke="#D4A373" stroke-width=".8" stroke-dasharray="3 2" opacity=".6"/><path d="M40 55 L45 45" fill="none" stroke="#D4A373" stroke-width=".8" stroke-dasharray="3 2" opacity=".6"/><path d="M45 45 L50 25" fill="none" stroke="#D4A373" stroke-width=".8" stroke-dasharray="3 2" opacity=".6"/></svg>
+<button onclick="showPoi('البرج الرئيسي','يبلغ ارتفاع البرج 30 متراً وقطره 36 متراً، أكبر برج دائري في شبه الجزيرة العربية')" style="position:absolute;left:50%;top:25%;transform:translate(-50%,-50%);border:none;cursor:pointer;background:none;z-index:2"><div style="width:40px;height:40px;border-radius:50%;background:var(--pri);display:flex;align-items:center;justify-content:center;box-shadow:0 3px 12px rgba(0,0,0,.2);border:2px solid #fff;font-size:16px">🏰</div><div style="font-size:10px;white-space:nowrap;margin-top:4px;font-weight:600;color:#081C15;text-align:center">البرج الرئيسي</div></button>
+<button onclick="showPoi('بوابة القلعة','المدخل الرئيسي مع نظام دفاعي متعدد الطبقات')" style="position:absolute;left:30%;top:70%;transform:translate(-50%,-50%);border:none;cursor:pointer;background:none;z-index:2"><div style="width:40px;height:40px;border-radius:50%;background:var(--acc);display:flex;align-items:center;justify-content:center;box-shadow:0 3px 12px rgba(0,0,0,.2);border:2px solid #fff;font-size:16px">🚪</div><div style="font-size:10px;white-space:nowrap;margin-top:4px;font-weight:600;color:#081C15;text-align:center">بوابة القلعة</div></button>
+<button onclick="showPoi('ساحة السوق','سوق نزوى التقليدي المشهور بالحرف اليدوية والفضة')" style="position:absolute;left:75%;top:60%;transform:translate(-50%,-50%);border:none;cursor:pointer;background:none;z-index:2"><div style="width:40px;height:40px;border-radius:50%;background:var(--pri);display:flex;align-items:center;justify-content:center;box-shadow:0 3px 12px rgba(0,0,0,.2);border:2px solid #fff;font-size:16px">🛍️</div><div style="font-size:10px;white-space:nowrap;margin-top:4px;font-weight:600;color:#081C15;text-align:center">ساحة السوق</div></button>
+<div style="position:absolute;left:40%;top:55%;transform:translate(-50%,-50%);z-index:3"><div style="width:18px;height:18px;border-radius:50%;background:var(--info);border:3px solid #fff;animation:userPulse 2s ease-in-out infinite"></div></div>
+<div style="position:absolute;top:12px;left:12px;display:flex;flex-direction:column;gap:8px;z-index:5">
+<button style="width:36px;height:36px;border-radius:50%;background:var(--acc);color:#fff;border:none;font-size:11px;font-weight:700;box-shadow:0 2px 10px rgba(0,0,0,.15);cursor:pointer">AR</button>
+<button style="width:36px;height:36px;border-radius:50%;background:#fff;color:var(--txt);border:none;font-size:11px;font-weight:700;box-shadow:0 2px 10px rgba(0,0,0,.15);cursor:pointer">EN</button>
+</div>
+</div>
+<div id="poi-sh" style="display:none;position:absolute;bottom:0;left:0;right:0;background:#fff;border-radius:24px 24px 0 0;padding:24px 20px 32px;box-shadow:0 -10px 40px rgba(0,0,0,.15);z-index:10;animation:slideUp .3s ease"><div style="width:40px;height:4px;border-radius:4px;background:#E5E7EB;margin:0 auto 16px"></div><h3 id="poi-n" style="font-weight:700;font-size:20px"></h3><p id="poi-i" style="color:var(--txt-l);margin:8px 0 16px;line-height:1.8"></p><div class="fx g12"><button class="btn btn-p" style="flex:1;font-size:13px">🎧 الدليل الصوتي</button><button class="btn btn-s" onclick="closePoi()" style="flex:1;font-size:13px">إغلاق</button></div></div>
+</div>
+
+<!-- ===== EMERGENCY ===== -->
+<div id="emergency" class="pg">
+<div class="hdr"><button class="hdr-b" onclick="nav('home')">→</button><h2 style="color:var(--red)">الطوارئ</h2><div style="width:40px"></div></div>
+<div class="pg-c fx fc ac jc p20">
+<div id="em-b" class="tc">
+<p style="color:var(--txt-l);margin-bottom:32px;line-height:1.8">اضغط على الزر في حالة الطوارئ<br>سيتم إرسال موقعك الدقيق لفريق الأمان</p>
+<button id="em-btn" onclick="sendSOS()" style="width:180px;height:180px;border-radius:50%;background:linear-gradient(135deg,#DC2626,#EF4444);border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 10px 50px rgba(220,38,38,.4);margin:0 auto;transition:.2s"><span style="font-size:48px">🚨</span><span id="em-t" style="color:#fff;font-weight:700;font-size:18px;margin-top:8px">طوارئ</span></button>
+</div>
+<div id="em-a" style="display:none" class="tc">
+<div style="width:100px;height:100px;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center;animation:alertPulse 1s ease-in-out infinite;margin:0 auto"><span style="font-size:48px;color:#fff">🚨</span></div>
+<h3 style="font-weight:700;color:var(--red);margin-top:24px;font-size:20px">تم إرسال التنبيه!</h3>
+<p style="color:var(--txt-l);line-height:1.8;margin-top:8px">فريق الأمان في طريقه إليك<br>موقعك: البرج الرئيسي - الطابق 3</p>
+<div class="cd" style="margin-top:24px;border-right:4px solid var(--red)"><div style="font-size:13px;color:var(--txt-l)">الوقت المتوقع للوصول</div><div style="font-size:28px;font-weight:700;color:var(--red);margin-top:4px">2 دقائق</div></div>
+</div></div>
+</div>
+
+<!-- ===== WALLET ===== -->
+<div id="wallet" class="pg">
+<div class="hdr"><button class="hdr-b" onclick="nav('home')">→</button><h2>المحفظة الذكية</h2><div style="width:40px"></div></div>
+<div class="pg-c" style="padding:0 20px 20px">
+<div style="background:linear-gradient(135deg,#081C15,#1B4332);border-radius:20px;padding:24px;color:#fff;position:relative;overflow:hidden;margin-bottom:20px"><div class="isl" style="opacity:.05"></div><div style="position:relative;z-index:1"><div class="fx jb mb20"><span style="font-family:'Amiri',serif;font-size:16px;color:var(--acc-l)">FortPass Pay</span><span style="color:var(--acc-l);font-size:20px">📶</span></div><div style="font-size:12px;opacity:.6">الرصيد المتاح</div><div style="font-size:36px;font-weight:700;margin:4px 0">15.700 ر.ع</div><div class="fx g16" style="margin-top:16px;font-size:12px;opacity:.7"><span>الحد اليومي: 50 ر.ع</span><span>|</span><span>NFC مزدوج</span></div></div></div>
+<div class="g3 mb20">
+<button class="cd" style="text-align:center;border:none;cursor:pointer;padding:16px 8px"><div style="font-size:24px;margin-bottom:6px">💳</div><div style="font-size:12px">شحن</div></button>
+<button class="cd" style="text-align:center;border:none;cursor:pointer;padding:16px 8px"><div style="font-size:24px;margin-bottom:6px">📊</div><div style="font-size:12px">الحركات</div></button>
+<button class="cd" style="text-align:center;border:none;cursor:pointer;padding:16px 8px"><div style="font-size:24px;margin-bottom:6px">🔒</div><div style="font-size:12px">حظر</div></button>
+</div>
+<h3 style="font-weight:700;font-size:16px;margin-bottom:12px">المعاملات اليوم</h3>
+<div class="cd fx ac g12 mb8"><div style="width:44px;height:44px;border-radius:12px;background:rgba(212,163,115,.1);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">🎫</div><div style="flex:1"><div style="font-size:14px;font-weight:600">تذكرة الدخول</div><div style="font-size:12px;color:var(--txt-l)">تذاكر • 10:05</div></div><div style="font-size:16px;font-weight:700;color:var(--red)">-3.000</div></div>
+<div class="cd fx ac g12 mb8"><div style="width:44px;height:44px;border-radius:12px;background:rgba(212,163,115,.1);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">☕</div><div style="flex:1"><div style="font-size:14px;font-weight:600">قهوة عمانية</div><div style="font-size:12px;color:var(--txt-l)">طعام • 10:45</div></div><div style="font-size:16px;font-weight:700;color:var(--red)">-0.800</div></div>
+<div class="cd fx ac g12 mb8"><div style="width:44px;height:44px;border-radius:12px;background:rgba(212,163,115,.1);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">🛍️</div><div style="flex:1"><div style="font-size:14px;font-weight:600">هدية تذكارية</div><div style="font-size:12px;color:var(--txt-l)">تسوق • 11:20</div></div><div style="font-size:16px;font-weight:700;color:var(--red)">-5.500</div></div>
+<div class="cd fx ac g12" style="background:rgba(27,67,50,.04);border:1px solid rgba(27,67,50,.1);margin-top:4px"><span style="font-size:22px">🛡️</span><div><div style="font-size:13px;font-weight:600">تشفير AES-256 + TLS 1.3</div><div style="font-size:11px;color:var(--txt-l)">جميع المعاملات مشفرة ومؤمنة</div></div></div>
+</div>
+</div>
+
+<!-- ===== EXHIBIT ===== -->
+<div id="exhibit" class="pg">
+<div class="hdr"><button class="hdr-b" onclick="nav('home')">→</button><h2>المعروضات</h2><button class="hdr-b" style="color:var(--acc)">🌐</button></div>
+<div class="pg-c" style="padding:0 20px 20px">
+<div class="cd tc mb16" style="background:linear-gradient(135deg,rgba(212,163,115,.06),rgba(233,196,106,.06));border:1px dashed rgba(212,163,115,.3)"><span style="font-size:28px">📡</span><div style="font-size:13px;color:var(--acc);margin-top:8px">قرّب السوار من لوحة NFC لعرض المعلومات</div></div>
+<div class="cd fi" style="overflow:hidden;padding:0;margin-bottom:16px"><div style="height:160px;background:linear-gradient(135deg,var(--pri),var(--pri-l));display:flex;align-items:center;justify-content:center;font-size:64px">⚔️</div><div style="padding:20px"><span style="display:inline-block;padding:2px 10px;background:rgba(212,163,115,.1);border-radius:20px;font-size:12px;color:var(--acc);font-weight:600;margin-bottom:8px">القرن 17 م</span><h3 style="font-size:20px;font-weight:700;margin:8px 0">المدفع العماني التاريخي</h3><p style="color:var(--txt-l);line-height:1.8">مدفع برتغالي غنمه العمانيون خلال معركة تحرير مسقط عام 1650م.</p><button class="btn btn-p" style="margin-top:16px;font-size:13px">🎧 الشرح الصوتي (2:30)</button></div></div>
+<div class="cd" style="overflow:hidden;padding:0;margin-bottom:16px"><div style="height:160px;background:linear-gradient(135deg,#2D6A4F,#40916C);display:flex;align-items:center;justify-content:center;font-size:64px">🚪</div><div style="padding:20px"><span style="display:inline-block;padding:2px 10px;background:rgba(212,163,115,.1);border-radius:20px;font-size:12px;color:var(--acc);font-weight:600;margin-bottom:8px">القرن 17 م</span><h3 style="font-size:20px;font-weight:700;margin:8px 0">باب القلعة الرئيسي</h3><p style="color:var(--txt-l);line-height:1.8">باب خشبي ضخم مرصع بالمسامير الحديدية.</p><button class="btn btn-p" style="margin-top:16px;font-size:13px">🎧 الشرح الصوتي (1:45)</button></div></div>
+<div class="cd"><div style="font-size:14px;font-weight:600;margin-bottom:12px">الترجمة الفورية</div><div class="fx g8" style="flex-wrap:wrap"><span style="padding:6px 14px;border-radius:20px;background:var(--acc);color:#fff;font-size:13px;cursor:pointer">العربية</span><span style="padding:6px 14px;border-radius:20px;background:#F3F4F6;font-size:13px;cursor:pointer">English</span><span style="padding:6px 14px;border-radius:20px;background:#F3F4F6;font-size:13px;cursor:pointer">Français</span><span style="padding:6px 14px;border-radius:20px;background:#F3F4F6;font-size:13px;cursor:pointer">中文</span></div></div>
+</div>
+</div>
+
+<!-- ===== REVIEW ===== -->
+<div id="review" class="pg">
+<div class="hdr"><button class="hdr-b" onclick="nav('home')">→</button><h2>تقييم الزيارة</h2><div style="width:40px"></div></div>
+<div class="pg-c p20">
+<div id="rv-f">
+<div class="cd tc mb20"><div style="font-size:48px;margin-bottom:8px">🏰</div><h3 style="font-size:18px;font-weight:700">قلعة نزوى</h3><p style="font-size:13px;color:var(--txt-l)">مدة الزيارة: ساعتان و 15 دقيقة</p><div class="fx jc g16" style="margin-top:12px"><div><div style="font-size:22px;font-weight:700;color:var(--pri)">12</div><div style="font-size:11px;color:var(--txt-l)">معلم</div></div><div style="width:1px;background:#E5E7EB"></div><div><div style="font-size:22px;font-weight:700;color:var(--pri)">2,450</div><div style="font-size:11px;color:var(--txt-l)">خطوة</div></div><div style="width:1px;background:#E5E7EB"></div><div><div style="font-size:22px;font-weight:700;color:var(--pri)">8</div><div style="font-size:11px;color:var(--txt-l)">صور</div></div></div></div>
+<h3 class="tc" style="font-weight:700;font-size:17px;margin-bottom:12px">كيف كانت تجربتك؟</h3>
+<div id="stars" class="fx jc g8 mb24">
+<button onclick="sRate(1)" class="sb" style="background:none;border:none;cursor:pointer;font-size:32px;color:#D1D5DB;transition:.2s;padding:4px">☆</button>
+<button onclick="sRate(2)" class="sb" style="background:none;border:none;cursor:pointer;font-size:32px;color:#D1D5DB;transition:.2s;padding:4px">☆</button>
+<button onclick="sRate(3)" class="sb" style="background:none;border:none;cursor:pointer;font-size:32px;color:#D1D5DB;transition:.2s;padding:4px">☆</button>
+<button onclick="sRate(4)" class="sb" style="background:none;border:none;cursor:pointer;font-size:32px;color:#D1D5DB;transition:.2s;padding:4px">☆</button>
+<button onclick="sRate(5)" class="sb" style="background:none;border:none;cursor:pointer;font-size:32px;color:#D1D5DB;transition:.2s;padding:4px">☆</button>
+</div>
+<textarea placeholder="شاركنا ملاحظاتك..." style="height:100px;resize:none;line-height:1.8;margin-bottom:16px"></textarea>
+<button class="btn btn-p" onclick="subRev()" id="rv-btn" style="opacity:.5" disabled>إرسال التقييم</button>
+</div>
+<div id="rv-s" style="display:none" class="fx fc ac jc tc"><div style="font-size:64px;margin-bottom:16px">🎉</div><h2 style="font-weight:700;font-size:22px">شكراً لتقييمك!</h2><p style="color:var(--txt-l);margin-top:8px">ملاحظاتك تساعدنا في التطوير</p><div class="cd" style="margin-top:24px"><div style="font-size:14px;font-weight:600;margin-bottom:8px">خصم 10% على زيارتك القادمة</div><div style="font-family:monospace;font-size:20px;color:var(--acc);letter-spacing:4px">FORT2026</div></div></div>
+</div>
+</div>
+
+<!-- ===== PROFILE ===== -->
+<div id="profile" class="pg">
+<div class="hdr"><button class="hdr-b" onclick="nav('home')">→</button><h2>الملف الشخصي</h2><div style="width:40px"></div></div>
+<div class="pg-c" style="padding:0 20px 20px">
+<div class="tc" style="padding:20px 0"><div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--acc),var(--acc-l));margin:0 auto 12px;display:flex;align-items:center;justify-content:center;font-size:36px">👤</div><h3 id="prof-name" style="font-weight:700;font-size:20px">الزائر</h3><p id="prof-email" style="font-size:13px;color:var(--txt-l)">visitor@fortpass.om</p></div>
+<div class="g3 mb20">
+<div class="cd tc" style="padding:16px 8px"><div style="font-size:24px;margin-bottom:4px">🏰</div><div style="font-size:20px;font-weight:700;color:var(--pri)">5</div><div style="font-size:11px;color:var(--txt-l)">زيارات</div></div>
+<div class="cd tc" style="padding:16px 8px"><div style="font-size:24px;margin-bottom:4px">🏅</div><div style="font-size:20px;font-weight:700;color:var(--pri)">12</div><div style="font-size:11px;color:var(--txt-l)">شارة</div></div>
+<div class="cd tc" style="padding:16px 8px"><div style="font-size:24px;margin-bottom:4px">⭐</div><div style="font-size:20px;font-weight:700;color:var(--pri)">850</div><div style="font-size:11px;color:var(--txt-l)">نقطة</div></div>
+</div>
+<div class="cd mb20 tc" style="background:linear-gradient(135deg,var(--pri),var(--pri-l));color:#fff;position:relative;overflow:hidden"><div class="isl" style="opacity:.06"></div><div style="position:relative;z-index:1"><span style="font-size:28px">🏅</span><div style="font-family:'Amiri',serif;font-size:18px;margin:8px 0 4px">شهادة زيارة رقمية</div><div style="font-size:12px;opacity:.7">قلعة نزوى التاريخية</div></div></div>
+<button class="fx ac g16 w1" style="padding:14px 0;border:none;border-bottom:1px solid #F3F4F6;background:none;cursor:pointer;text-align:right"><span style="font-size:18px">🕐</span><span style="flex:1;font-size:15px">سجل الزيارات</span><span style="color:#D1D5DB">←</span></button>
+<button class="fx ac g16 w1" style="padding:14px 0;border:none;border-bottom:1px solid #F3F4F6;background:none;cursor:pointer;text-align:right"><span style="font-size:18px">🔔</span><span style="flex:1;font-size:15px">إعدادات التنبيهات</span><span style="color:#D1D5DB">←</span></button>
+<button class="fx ac g16 w1" style="padding:14px 0;border:none;border-bottom:1px solid #F3F4F6;background:none;cursor:pointer;text-align:right"><span style="font-size:18px">🛡️</span><span style="flex:1;font-size:15px">الأمان والخصوصية</span><span style="color:#D1D5DB">←</span></button>
+<button onclick="doLogout()" class="fx ac g16 w1" style="padding:14px 0;border:none;background:none;cursor:pointer;text-align:right"><span style="font-size:18px">🚪</span><span style="flex:1;font-size:15px;color:var(--red)">تسجيل الخروج</span><span style="color:#D1D5DB">←</span></button>
+</div>
+</div>
+
+<!-- ===== TAB BAR ===== -->
+<div id="tbar" class="tab-bar" style="display:none">
+<button class="tab on" onclick="nav('home')"><span class="tab-i">🏠</span><span>الرئيسية</span><div class="tab-d"></div></button>
+<button class="tab" onclick="nav('map')"><span class="tab-i">🗺️</span><span>الخريطة</span><div class="tab-d"></div></button>
+<button class="tab" onclick="nav('booking')"><span class="tab-i">🎫</span><span>الحجز</span><div class="tab-d"></div></button>
+<button class="tab" onclick="nav('wristband')"><span class="tab-i">⌚</span><span>السوار</span><div class="tab-d"></div></button>
+<button class="tab" onclick="nav('profile')"><span class="tab-i">👤</span><span>حسابي</span><div class="tab-d"></div></button>
+</div>
+
+</div>
+
+<!-- ===== TOAST CONTAINER ===== -->
+<div id="toast-c" style="position:fixed;top:0;left:0;right:0;z-index:9999;display:flex;flex-direction:column;align-items:center;pointer-events:none"></div>
+
+<script>
+// =============== STATE ===============
+let user = JSON.parse(localStorage.getItem('fp_user') || 'null');
+let btDevice = null, btServer = null, btConnected = false;
+let bStep = 1, selTour = 'تاريخية', selTime = '10:00', hasBook = false, rating = 0;
+let notifications = JSON.parse(localStorage.getItem('fp_notifs') || '[]');
+const tabPgs = ['home','map','booking','wristband','profile'];
+
+// =============== INIT ===============
+setTimeout(() => {
+  if (user) { nav('home'); updateUserUI(); }
+  else nav('auth-login');
+}, 2200);
+
+// =============== NAVIGATION ===============
+function nav(pg) {
+  document.querySelectorAll('.pg').forEach(p => { p.classList.remove('on'); p.style.display = 'none'; });
+  const el = document.getElementById(pg);
+  if (el) { el.style.display = 'flex'; el.classList.add('on'); }
+  const tb = document.getElementById('tbar');
+  tb.style.display = tabPgs.includes(pg) ? 'flex' : 'none';
+  document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('on', tabPgs[i] === pg));
+  if (pg === 'emergency') resetEmer();
+  if (pg === 'booking') resetBook();
+  if (pg === 'notifications') renderNotifs();
+  if (pg === 'wristband') checkBTSupport();
+}
+
+// =============== TOAST ===============
+function showToast(msg, type='') {
+  const t = document.createElement('div');
+  t.className = 'toast ' + type;
+  t.textContent = msg;
+  document.getElementById('toast-c').appendChild(t);
+  setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity .3s'; setTimeout(() => t.remove(), 300); }, 3000);
+}
+
+// =============== AUTH ===============
+function togglePwd(id, btn) {
+  const inp = document.getElementById(id);
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+  btn.textContent = inp.type === 'password' ? '👁' : '🙈';
+}
+
+function checkPassStrength(p) {
+  const el = document.getElementById('pass-strength');
+  if (!p) { el.innerHTML = ''; return; }
+  let s = 0;
+  if (p.length >= 8) s++;
+  if (/[A-Z]/.test(p)) s++;
+  if (/[0-9]/.test(p)) s++;
+  if (/[^A-Za-z0-9]/.test(p)) s++;
+  const labels = ['ضعيفة','متوسطة','جيدة','قوية'];
+  const colors = ['#DC2626','#F59E0B','#0EA5E9','#16A34A'];
+  el.innerHTML = `<div style="flex:1;height:4px;border-radius:4px;background:#E5E7EB;overflow:hidden"><div style="width:${s*25}%;height:100%;background:${colors[s-1]||'#E5E7EB'};border-radius:4px;transition:.3s"></div></div><span style="font-size:12px;color:${colors[s-1]||'#9CA3AF'};font-weight:600;min-width:50px">${labels[s-1]||''}</span>`;
+}
+
+function doRegister() {
+  const name = document.getElementById('reg-name').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  const phone = document.getElementById('reg-phone').value.trim();
+  const pass = document.getElementById('reg-pass').value;
+  const pass2 = document.getElementById('reg-pass2').value;
+  const terms = document.getElementById('reg-terms').checked;
+
+  if (!name) return showToast('أدخل الاسم الكامل', 'err');
+  if (!email || !email.includes('@')) return showToast('أدخل بريد إلكتروني صحيح', 'err');
+  if (!phone) return showToast('أدخل رقم الهاتف', 'err');
+  if (pass.length < 8) return showToast('كلمة المرور يجب أن تكون 8 أحرف على الأقل', 'err');
+  if (pass !== pass2) return showToast('كلمة المرور غير متطابقة', 'err');
+  if (!terms) return showToast('يجب الموافقة على الشروط والأحكام', 'err');
+
+  // Check if email already exists
+  const users = JSON.parse(localStorage.getItem('fp_users') || '[]');
+  if (users.find(u => u.email === email)) return showToast('البريد الإلكتروني مسجل مسبقاً', 'err');
+
+  // Save user
+  const newUser = { name, email, phone, pass: btoa(pass), created: new Date().toISOString() };
+  users.push(newUser);
+  localStorage.setItem('fp_users', JSON.stringify(users));
+
+  user = { name, email, phone };
+  localStorage.setItem('fp_user', JSON.stringify(user));
+  
+  showToast('تم إنشاء الحساب بنجاح! 🎉', 'ok');
+  addNotification('مرحباً بك في FortPass! 🏰', 'تم إنشاء حسابك بنجاح. استمتع بتجربة سياحية فريدة.');
+  requestNotifPermission();
+  updateUserUI();
+  setTimeout(() => nav('home'), 800);
+}
+
+function doLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const pass = document.getElementById('login-pass').value;
+  
+  if (!email) return showToast('أدخل البريد الإلكتروني', 'err');
+  if (!pass) return showToast('أدخل كلمة المرور', 'err');
+
+  const users = JSON.parse(localStorage.getItem('fp_users') || '[]');
+  const found = users.find(u => u.email === email && u.pass === btoa(pass));
+  
+  if (!found) return showToast('بيانات الدخول غير صحيحة', 'err');
+
+  user = { name: found.name, email: found.email, phone: found.phone };
+  localStorage.setItem('fp_user', JSON.stringify(user));
+  if (document.getElementById('remember-me').checked) localStorage.setItem('fp_remember', 'true');
+  
+  showToast('مرحباً بعودتك! 👋', 'ok');
+  addNotification('تسجيل دخول ناجح ✅', 'تم تسجيل الدخول من جهازك الحالي.');
+  requestNotifPermission();
+  updateUserUI();
+  setTimeout(() => nav('home'), 500);
+}
+
+function socialLogin(provider) {
+  showToast(`تسجيل الدخول عبر ${provider} قريباً`, 'wrn');
+}
+
+function doLogout() {
+  user = null;
+  localStorage.removeItem('fp_user');
+  localStorage.removeItem('fp_remember');
+  disconnectBT();
+  showToast('تم تسجيل الخروج', 'ok');
+  setTimeout(() => nav('auth-login'), 500);
+}
+
+function updateUserUI() {
+  if (!user) return;
+  document.getElementById('user-name-display').textContent = user.name;
+  document.getElementById('prof-name').textContent = user.name;
+  document.getElementById('prof-email').textContent = user.email;
+  updateNotifBadge();
+}
+
+// =============== NOTIFICATIONS ===============
+function requestNotifPermission() {
+  if ('Notification' in window && Notification.permission === 'default') {
+    Notification.requestPermission().then(p => {
+      if (p === 'granted') showToast('تم تفعيل التنبيهات ✅', 'ok');
+    });
+  }
+}
+
+function sendBrowserNotif(title, body) {
+  if ('Notification' in window && Notification.permission === 'granted') {
+    new Notification(title, { body, icon: '🏰', dir: 'rtl', lang: 'ar', vibrate: [200, 100, 200] });
+  }
+}
+
+function addNotification(title, body, type='info') {
+  const n = { id: Date.now(), title, body, type, time: new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' }), date: new Date().toLocaleDateString('ar-EG'), read: false };
+  notifications.unshift(n);
+  localStorage.setItem('fp_notifs', JSON.stringify(notifications));
+  updateNotifBadge();
+  sendBrowserNotif(title, body);
+  // Vibrate if supported
+  if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+}
+
+function updateNotifBadge() {
+  const unread = notifications.filter(n => !n.read).length;
+  const badge = document.getElementById('notif-badge');
+  if (unread > 0) { badge.style.display = 'flex'; badge.textContent = unread > 9 ? '9+' : unread; }
+  else badge.style.display = 'none';
+}
+
+function renderNotifs() {
+  const list = document.getElementById('notif-list');
+  const empty = document.getElementById('notif-empty');
+  
+  // Mark all as read
+  notifications.forEach(n => n.read = true);
+  localStorage.setItem('fp_notifs', JSON.stringify(notifications));
+  updateNotifBadge();
+
+  if (!notifications.length) { list.innerHTML = ''; empty.style.display = 'flex'; return; }
+  empty.style.display = 'none';
+
+  const icons = { info: '📢', success: '✅', warning: '⚠️', emergency: '🚨', bluetooth: '📶' };
+  list.innerHTML = notifications.map(n => `
+    <div class="cd mb12 fx g12" style="animation:fadeIn .3s ease">
+      <div style="width:44px;height:44px;border-radius:12px;background:rgba(212,163,115,.1);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">${icons[n.type]||'📢'}</div>
+      <div style="flex:1"><div style="font-size:14px;font-weight:600">${n.title}</div><div style="font-size:12px;color:var(--txt-l);line-height:1.6;margin-top:2px">${n.body}</div><div style="font-size:11px;color:#9CA3AF;margin-top:4px">${n.time} • ${n.date}</div></div>
+    </div>`).join('');
+}
+
+function clearNotifications() {
+  notifications = [];
+  localStorage.setItem('fp_notifs', JSON.stringify(notifications));
+  updateNotifBadge();
+  renderNotifs();
+  showToast('تم مسح جميع التنبيهات', 'ok');
+}
+
+// =============== REAL BLUETOOTH ===============
+function checkBTSupport() {
+  if (!navigator.bluetooth) {
+    document.getElementById('bt-warn').style.display = 'block';
+  } else {
+    document.getElementById('bt-warn').style.display = 'none';
+  }
+}
+
+async function startRealBluetooth() {
+  const btn = document.getElementById('bt-scan-btn');
+  const title = document.getElementById('bt-title');
+  const desc = document.getElementById('bt-desc');
+
+  if (!navigator.bluetooth) {
+    // Fallback: simulate for non-BT browsers
+    showToast('البلوتوث غير متوفر - وضع المحاكاة', 'wrn');
+    btn.innerHTML = '<span class="spin"></span>';
+    btn.disabled = true;
+    title.textContent = 'جارٍ البحث...';
+    desc.textContent = 'وضع المحاكاة - يتم البحث عن أجهزة قريبة...';
+    document.getElementById('bt-ripple1').style.display = 'block';
+    document.getElementById('bt-ripple2').style.display = 'block';
+
+    setTimeout(() => {
+      document.getElementById('bt-ripple1').style.display = 'none';
+      document.getElementById('bt-ripple2').style.display = 'none';
+      title.textContent = 'تم العثور على السوار!';
+      desc.textContent = '';
+      btn.innerHTML = '🔗 اتصال بالسوار';
+      btn.disabled = false;
+      btn.onclick = () => simulateConnect();
+
+      // Show found device
+      document.getElementById('bt-devices').style.display = 'block';
+      document.getElementById('bt-device-list').innerHTML = `
+        <div class="cd bt-dev fx ac g12 mb8" onclick="simulateConnect()" style="border:1.5px solid #E5E7EB">
+          <div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,var(--acc),var(--acc-l));display:flex;align-items:center;justify-content:center"><span style="font-size:22px">⌚</span></div>
+          <div style="flex:1"><div style="font-size:14px;font-weight:600">FortPass Band #4582</div><div style="font-size:12px;color:var(--txt-l)">RSSI: -45 dBm • جاهز للاتصال</div></div>
+          <span style="color:var(--grn);font-size:12px;font-weight:600">●</span>
+        </div>`;
+    }, 2500);
+    return;
+  }
+
+  // REAL Web Bluetooth API
+  try {
+    btn.innerHTML = '<span class="spin"></span>';
+    btn.disabled = true;
+    title.textContent = 'جارٍ البحث...';
+    desc.textContent = 'اختر السوار الذكي من القائمة...';
+    document.getElementById('bt-ripple1').style.display = 'block';
+    document.getElementById('bt-ripple2').style.display = 'block';
+
+    // Request Bluetooth device - accept ALL devices
+    btDevice = await navigator.bluetooth.requestDevice({
+      acceptAllDevices: true,
+      optionalServices: ['battery_service', 'device_information', 'heart_rate', 'generic_access']
+    });
+
+    document.getElementById('bt-ripple1').style.display = 'none';
+    document.getElementById('bt-ripple2').style.display = 'none';
+
+    if (btDevice) {
+      title.textContent = 'تم اختيار الجهاز!';
+      desc.textContent = btDevice.name || 'جهاز بلوتوث';
+
+      // Show found device
+      document.getElementById('bt-devices').style.display = 'block';
+      document.getElementById('bt-device-list').innerHTML = `
+        <div class="cd bt-dev fx ac g12 mb8" onclick="connectRealBT()" style="border:1.5px solid var(--acc)">
+          <div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,var(--acc),var(--acc-l));display:flex;align-items:center;justify-content:center"><span style="font-size:22px">⌚</span></div>
+          <div style="flex:1"><div style="font-size:14px;font-weight:600">${btDevice.name || 'جهاز بلوتوث'}</div><div style="font-size:12px;color:var(--txt-l)">ID: ${btDevice.id?.substring(0,8) || 'N/A'}... • جاهز للاتصال</div></div>
+          <span style="color:var(--acc);font-size:12px;font-weight:600;animation:blink 1s infinite">●</span>
+        </div>`;
+
+      btn.innerHTML = '🔗 اتصال';
+      btn.disabled = false;
+      btn.onclick = connectRealBT;
+
+      // Listen for disconnect
+      btDevice.addEventListener('gattserverdisconnected', onBTDisconnect);
+    }
+  } catch (err) {
+    document.getElementById('bt-ripple1').style.display = 'none';
+    document.getElementById('bt-ripple2').style.display = 'none';
+    title.textContent = 'ربط السوار الذكي';
+    desc.textContent = 'اضغط للبحث عن أجهزة البلوتوث القريبة';
+    btn.innerHTML = '🔍 البحث عن الأجهزة';
+    btn.disabled = false;
+    btn.onclick = startRealBluetooth;
+    if (err.name !== 'NotFoundError') showToast('خطأ: ' + err.message, 'err');
+  }
+}
+
+async function connectRealBT() {
+  const btn = document.getElementById('bt-scan-btn');
+  btn.innerHTML = '<span class="spin"></span> جارٍ الاتصال...';
+  btn.disabled = true;
+
+  try {
+    btServer = await btDevice.gatt.connect();
+    btConnected = true;
+    
+    // Try reading battery level
+    let battLevel = '87%';
+    try {
+      const battService = await btServer.getPrimaryService('battery_service');
+      const battChar = await battService.getCharacteristic('battery_level');
+      const battVal = await battChar.readValue();
+      battLevel = battVal.getUint8(0) + '%';
+    } catch(e) { /* Battery service not available */ }
+
+    // Update UI
+    document.getElementById('bt-off').style.display = 'none';
+    document.getElementById('bt-on').style.display = 'block';
+    document.getElementById('bt-connected-name').textContent = `متصل بـ ${btDevice.name || 'جهاز بلوتوث'}`;
+    document.getElementById('bt-batt').textContent = battLevel;
+    document.getElementById('hm-band-dot').style.background = '#16A34A';
+    document.getElementById('hm-band-st').textContent = 'متصل ✓';
+    
+    showToast('تم الاتصال بالسوار بنجاح! ⌚', 'ok');
+    addNotification('تم ربط السوار ⌚', `تم الاتصال بـ ${btDevice.name || 'السوار الذكي'} بنجاح`, 'bluetooth');
+
+  } catch (err) {
+    showToast('فشل الاتصال: ' + err.message, 'err');
+    btn.innerHTML = '🔗 إعادة المحاولة';
+    btn.disabled = false;
+    btn.onclick = connectRealBT;
+  }
+}
+
+function simulateConnect() {
+  btConnected = true;
+  document.getElementById('bt-off').style.display = 'none';
+  document.getElementById('bt-on').style.display = 'block';
+  document.getElementById('bt-connected-name').textContent = 'متصل بـ FortPass Band #4582';
+  document.getElementById('bt-batt').textContent = '87%';
+  document.getElementById('bt-rssi').textContent = '-45 dBm';
+  document.getElementById('hm-band-dot').style.background = '#16A34A';
+  document.getElementById('hm-band-st').textContent = 'متصل ✓';
+  showToast('تم الاتصال بالسوار بنجاح! ⌚', 'ok');
+  addNotification('تم ربط السوار ⌚', 'تم الاتصال بـ FortPass Band #4582 بنجاح', 'bluetooth');
+}
+
+function onBTDisconnect() {
+  btConnected = false;
+  document.getElementById('bt-off').style.display = 'block';
+  document.getElementById('bt-on').style.display = 'none';
+  document.getElementById('hm-band-dot').style.background = '#EF4444';
+  document.getElementById('hm-band-st').textContent = 'غير متصل';
+  document.getElementById('bt-devices').style.display = 'none';
+  
+  const btn = document.getElementById('bt-scan-btn');
+  btn.innerHTML = '🔍 البحث عن الأجهزة';
+  btn.disabled = false;
+  btn.onclick = startRealBluetooth;
+  document.getElementById('bt-title').textContent = 'ربط السوار الذكي';
+  document.getElementById('bt-desc').textContent = 'اضغط للبحث عن أجهزة البلوتوث القريبة';
+  
+  showToast('تم قطع الاتصال بالسوار', 'wrn');
+  addNotification('انقطع اتصال السوار ⚠️', 'تم فقدان الاتصال بالسوار الذكي', 'warning');
+}
+
+function disconnectBT() {
+  if (btDevice && btDevice.gatt && btDevice.gatt.connected) {
+    btDevice.gatt.disconnect();
+  }
+  btConnected = false;
+  btDevice = null;
+  btServer = null;
+  onBTDisconnect();
+}
+
+// =============== BOOKING ===============
+function resetBook() { bStep=1; upBook(); document.getElementById('bsuc').style.display='none'; document.getElementById('bnav').style.display='block'; }
+function upBook() {
+  ['bs1','bs2','bs3'].forEach((id,i) => document.getElementById(id).style.display = (i+1===bStep)?'block':'none');
+  ['bp1','bp2','bp3'].forEach((id,i) => document.getElementById(id).style.background = (i+1<=bStep)?'var(--acc)':'#E5E7EB');
+  document.getElementById('bprev').style.display = bStep>1?'block':'none';
+  document.getElementById('bnxt').textContent = bStep<3?'التالي':'تأكيد الحجز والدفع';
+}
+function bNext() {
+  if (bStep<3) { bStep++; if(bStep===3){ document.getElementById('cd2').textContent=document.getElementById('vdate').value; document.getElementById('ct2').textContent=selTime; document.getElementById('ctr2').textContent=selTour; } upBook(); }
+  else { document.getElementById('bs3').style.display='none'; document.getElementById('bnav').style.display='none'; document.getElementById('bsuc').style.display='flex'; hasBook=true; document.getElementById('hm-ticket').textContent='محجوزة ✓'; addNotification('تم الحجز بنجاح! 🎫','تذكرتك لقلعة نزوى جاهزة - '+selTour+' في '+selTime,'success'); setTimeout(()=>nav('home'),2500); }
+}
+function bPrev(){if(bStep>1){bStep--;upBook()}}
+function sTour(t,el){selTour=t;document.querySelectorAll('.tbtn').forEach(b=>{b.style.border='2px solid transparent';b.style.background='#fff'});el.style.border='2px solid var(--acc)';el.style.background='rgba(212,163,115,.06)'}
+function sTime(t,el){selTime=t;document.querySelectorAll('.tmb').forEach(b=>b.style.border='2px solid transparent');el.style.border='2px solid var(--acc)'}
+
+// =============== MAP ===============
+function togAG(){const a=document.getElementById('ag-bar');a.style.display=a.style.display==='none'?'flex':'none'}
+function showPoi(n,i){document.getElementById('poi-n').textContent=n;document.getElementById('poi-i').textContent=i;document.getElementById('poi-sh').style.display='block'}
+function closePoi(){document.getElementById('poi-sh').style.display='none'}
+
+// =============== EMERGENCY ===============
+function resetEmer(){document.getElementById('em-b').style.display='block';document.getElementById('em-a').style.display='none';document.getElementById('em-t').textContent='طوارئ';document.getElementById('em-t').style.fontSize='18px'}
+function sendSOS(){
+  const btn=document.getElementById('em-btn'),txt=document.getElementById('em-t');
+  btn.style.transform='scale(.95)';txt.style.fontSize='32px';
+  let c=3;txt.textContent=c;
+  if(navigator.vibrate) navigator.vibrate([500,200,500,200,500]);
+  const t=setInterval(()=>{c--;if(c<=0){clearInterval(t);document.getElementById('em-b').style.display='none';document.getElementById('em-a').style.display='block';addNotification('تنبيه طوارئ! 🚨','تم إرسال موقعك لفريق الأمان - البرج الرئيسي','emergency');
+  // Try to get real location
+  if(navigator.geolocation){navigator.geolocation.getCurrentPosition(p=>{showToast(`تم إرسال الموقع: ${p.coords.latitude.toFixed(4)}, ${p.coords.longitude.toFixed(4)}`,'ok')},()=>{})}}else{txt.textContent=c}},1000);
+}
+
+// =============== REVIEW ===============
+function sRate(n){rating=n;document.querySelectorAll('.sb').forEach((s,i)=>{s.textContent=i<n?'★':'☆';s.style.color=i<n?'#E9C46A':'#D1D5DB';s.style.transform=i<n?'scale(1.2)':'scale(1)'});const b=document.getElementById('rv-btn');b.disabled=false;b.style.opacity='1'}
+function subRev(){if(!rating)return;document.getElementById('rv-f').style.display='none';document.getElementById('rv-s').style.display='flex';addNotification('شكراً لتقييمك! ⭐','حصلت على كود خصم FORT2026 بقيمة 10%','success')}
+
+// =============== SERVICE WORKER ===============
+if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('./sw.js').catch(e=>console.log(e))})}
+</script>
+</body>
+</html>
