@@ -263,8 +263,8 @@ input:focus,textarea:focus{border-color:var(--acc)}
 <div id="bt-warn" style="display:none;width:100%;" class="mb20">
 <div class="cd" style="background:#FEF3C7;border:1px solid #FDE68A">
 <div class="fx ac g12"><span style="font-size:22px">⚠️</span>
-<div><div style="font-size:14px;font-weight:600;color:#92400E">البلوتوث غير مدعوم</div>
-<div style="font-size:12px;color:#A16207">يتطلب متصفح Chrome على أندرويد أو جهاز يدعم Web Bluetooth</div></div>
+<div><div style="font-size:14px;font-weight:600;color:#92400E">وضع المحاكاة</div>
+<div style="font-size:12px;color:#A16207">البلوتوث الحقيقي يعمل عند تثبيت التطبيق على هاتف أندرويد عبر Chrome. هنا ستجرب وضع المحاكاة.</div></div>
 </div></div>
 </div>
 
@@ -672,11 +672,15 @@ function clearNotifications() {
 
 // =============== REAL BLUETOOTH ===============
 function checkBTSupport() {
-  if (!navigator.bluetooth) {
+  if (!isBTAvailable()) {
     document.getElementById('bt-warn').style.display = 'block';
   } else {
     document.getElementById('bt-warn').style.display = 'none';
   }
+}
+
+function isBTAvailable() {
+  try { return !!navigator.bluetooth && typeof navigator.bluetooth.requestDevice === 'function'; } catch(e) { return false; }
 }
 
 async function startRealBluetooth() {
@@ -684,34 +688,12 @@ async function startRealBluetooth() {
   const title = document.getElementById('bt-title');
   const desc = document.getElementById('bt-desc');
 
-  if (!navigator.bluetooth) {
-    // Fallback: simulate for non-BT browsers
-    showToast('البلوتوث غير متوفر - وضع المحاكاة', 'wrn');
-    btn.innerHTML = '<span class="spin"></span>';
-    btn.disabled = true;
-    title.textContent = 'جارٍ البحث...';
-    desc.textContent = 'وضع المحاكاة - يتم البحث عن أجهزة قريبة...';
-    document.getElementById('bt-ripple1').style.display = 'block';
-    document.getElementById('bt-ripple2').style.display = 'block';
+  // Check if BT is truly available (not just exists but also permitted)
+  let btAvail = isBTAvailable();
+  if (btAvail) { try { await navigator.bluetooth.getAvailability(); } catch(e) { btAvail = false; } }
 
-    setTimeout(() => {
-      document.getElementById('bt-ripple1').style.display = 'none';
-      document.getElementById('bt-ripple2').style.display = 'none';
-      title.textContent = 'تم العثور على السوار!';
-      desc.textContent = '';
-      btn.innerHTML = '🔗 اتصال بالسوار';
-      btn.disabled = false;
-      btn.onclick = () => simulateConnect();
-
-      // Show found device
-      document.getElementById('bt-devices').style.display = 'block';
-      document.getElementById('bt-device-list').innerHTML = `
-        <div class="cd bt-dev fx ac g12 mb8" onclick="simulateConnect()" style="border:1.5px solid #E5E7EB">
-          <div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,var(--acc),var(--acc-l));display:flex;align-items:center;justify-content:center"><span style="font-size:22px">⌚</span></div>
-          <div style="flex:1"><div style="font-size:14px;font-weight:600">FortPass Band #4582</div><div style="font-size:12px;color:var(--txt-l)">RSSI: -45 dBm • جاهز للاتصال</div></div>
-          <span style="color:var(--grn);font-size:12px;font-weight:600">●</span>
-        </div>`;
-    }, 2500);
+  if (!btAvail) {
+    simulateScan();
     return;
   }
 
@@ -756,6 +738,11 @@ async function startRealBluetooth() {
   } catch (err) {
     document.getElementById('bt-ripple1').style.display = 'none';
     document.getElementById('bt-ripple2').style.display = 'none';
+    // If permissions policy blocks BT, fallback to simulation
+    if (err.message && (err.message.includes('permissions') || err.message.includes('disallowed') || err.message.includes('SecurityError'))) {
+      showToast('وضع المحاكاة - البلوتوث محظور هنا', 'wrn');
+      simulateScan(); return;
+    }
     title.textContent = 'ربط السوار الذكي';
     desc.textContent = 'اضغط للبحث عن أجهزة البلوتوث القريبة';
     btn.innerHTML = '🔍 البحث عن الأجهزة';
@@ -800,6 +787,34 @@ async function connectRealBT() {
     btn.disabled = false;
     btn.onclick = connectRealBT;
   }
+}
+
+function simulateScan() {
+  const btn = document.getElementById('bt-scan-btn');
+  const title = document.getElementById('bt-title');
+  const desc = document.getElementById('bt-desc');
+  btn.innerHTML = '<span class="spin"></span>';
+  btn.disabled = true;
+  title.textContent = 'جارٍ البحث...';
+  desc.textContent = 'وضع المحاكاة - يتم البحث عن أجهزة قريبة...';
+  document.getElementById('bt-ripple1').style.display = 'block';
+  document.getElementById('bt-ripple2').style.display = 'block';
+  setTimeout(() => {
+    document.getElementById('bt-ripple1').style.display = 'none';
+    document.getElementById('bt-ripple2').style.display = 'none';
+    title.textContent = 'تم العثور على السوار!';
+    desc.textContent = '';
+    btn.innerHTML = '🔗 اتصال بالسوار';
+    btn.disabled = false;
+    btn.onclick = () => simulateConnect();
+    document.getElementById('bt-devices').style.display = 'block';
+    document.getElementById('bt-device-list').innerHTML = `
+      <div class="cd bt-dev fx ac g12 mb8" onclick="simulateConnect()" style="border:1.5px solid #E5E7EB">
+        <div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,var(--acc),var(--acc-l));display:flex;align-items:center;justify-content:center"><span style="font-size:22px">⌚</span></div>
+        <div style="flex:1"><div style="font-size:14px;font-weight:600">FortPass Band #4582</div><div style="font-size:12px;color:var(--txt-l)">RSSI: -45 dBm • جاهز للاتصال</div></div>
+        <span style="color:var(--grn);font-size:12px;font-weight:600">●</span>
+      </div>`;
+  }, 2500);
 }
 
 function simulateConnect() {
@@ -882,7 +897,7 @@ function sRate(n){rating=n;document.querySelectorAll('.sb').forEach((s,i)=>{s.te
 function subRev(){if(!rating)return;document.getElementById('rv-f').style.display='none';document.getElementById('rv-s').style.display='flex';addNotification('شكراً لتقييمك! ⭐','حصلت على كود خصم FORT2026 بقيمة 10%','success')}
 
 // =============== SERVICE WORKER ===============
-if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('./sw.js').catch(e=>console.log(e))})}
+if('serviceWorker' in navigator){try{window.addEventListener('load',()=>{navigator.serviceWorker.register('./sw.js').catch(()=>{})})}catch(e){}}
 </script>
 </body>
 </html>
